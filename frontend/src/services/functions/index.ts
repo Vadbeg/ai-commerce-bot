@@ -3,11 +3,13 @@
  */
 
 export { orderNowFunction } from './orderNow';
+export { requestHumanHelpFunction } from './requestHumanHelp';
 
 // Import all functions here as you add more
 import { orderNowFunction } from './orderNow';
+import { requestHumanHelpFunction } from './requestHumanHelp';
 
 export const availableFunctions = [
   orderNowFunction,
-  // Add more functions here
+  requestHumanHelpFunction,
 ];
