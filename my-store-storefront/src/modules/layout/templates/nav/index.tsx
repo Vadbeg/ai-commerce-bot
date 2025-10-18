@@ -17,7 +17,7 @@ export default function Nav() {
             Home
           </LocalizedClientLink>
           <LocalizedClientLink
-            href="/edison/configure"
+            href="/cart"
             className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-gray-600 text-gray-500"
           >
             <ShoppingCart size={18} />
