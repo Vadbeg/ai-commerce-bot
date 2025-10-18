@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description: 'Experience the future of driving with Edison Model S. Superior range, performance, and technology.',
 };
 
-export default function EdisonPage({ params }: { params: { countryCode: string } }) {
-  const { countryCode } = params;
+export default async function EdisonPage({ params }: { params: Promise<{ countryCode: string }> }) {
+  const { countryCode } = await params;
 
   return (
     <div className="w-full">

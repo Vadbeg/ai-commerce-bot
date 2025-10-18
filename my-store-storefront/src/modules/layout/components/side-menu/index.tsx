@@ -8,6 +8,7 @@ import { Fragment } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CountrySelect from "../country-select"
 import { HttpTypes } from "@medusajs/types"
+import { STORE_NAME } from "@lib/constants"
 
 const SideMenuItems = {
   Home: "/",
@@ -91,7 +92,7 @@ const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
                         />
                       </div>
                       <Text className="flex justify-between txt-compact-small">
-                        © {new Date().getFullYear()} Medusa Store. All rights
+                        © {new Date().getFullYear()} {STORE_NAME}. All rights
                         reserved.
                       </Text>
                     </div>
