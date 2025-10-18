@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, MessageSquare, CheckCircle, AlertCircle, Tag, X } from 'lucide-react';
 import {
   getHelpRequests,
   answerHelpRequest,
@@ -7,11 +7,13 @@ import {
   getPendingCount,
   type HelpRequest,
 } from '../services/helpRequestService';
+import { getDiscount, clearDiscount, type Discount } from '../services/discountService';
 
 const Admin = () => {
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [pendingCount, setPendingCount] = useState(0);
+  const [activeDiscount, setActiveDiscount] = useState<Discount | null>(null);
 
   // Load requests and setup polling
   useEffect(() => {
@@ -39,6 +41,16 @@ const Admin = () => {
     });
     setRequests(sorted);
     setPendingCount(getPendingCount());
+
+    // Load active discount
+    setActiveDiscount(getDiscount());
+  };
+
+  const handleClearDiscount = () => {
+    if (confirm('Are you sure you want to clear the active discount?')) {
+      clearDiscount();
+      setActiveDiscount(null);
+    }
   };
 
   const handleAnswerSubmit = (requestId: string) => {
@@ -86,6 +98,30 @@ const Admin = () => {
               <p className="text-gray-600 mt-1">Agent Help Requests</p>
             </div>
             <div className="flex items-center gap-6">
+              {activeDiscount && (
+                <div className="px-4 py-2 bg-green-50 border-2 border-green-500 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Tag className="text-green-600" size={18} />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-green-700">
+                          Active Discount: {activeDiscount.percentage}%
+                        </span>
+                        <button
+                          onClick={handleClearDiscount}
+                          className="p-1 hover:bg-green-100 rounded transition-colors"
+                          title="Clear discount"
+                        >
+                          <X size={14} className="text-green-600" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        Applied to all orders
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="text-right">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="text-orange-500" size={20} />

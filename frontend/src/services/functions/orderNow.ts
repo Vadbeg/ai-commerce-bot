@@ -11,6 +11,7 @@
  */
 
 import type { FunctionDefinition } from '../functionCalling';
+import { getDiscount } from '../discountService';
 
 export const orderNowFunction: FunctionDefinition = {
   name: 'orderNow',
@@ -23,10 +24,20 @@ export const orderNowFunction: FunctionDefinition = {
   handler: async () => {
     console.log('[orderNow] Navigating to configurator page...');
 
+    // Check for active discount
+    const activeDiscount = getDiscount();
+    if (activeDiscount) {
+      console.log(`[orderNow] Active discount: ${activeDiscount.percentage}%`);
+    }
+
     // Navigate to the cart/configurator page
+    // The discount is stored in localStorage and will be automatically applied
     window.location.href = '/cart';
 
     // Return response for agent (if "Wait for response" is enabled in ElevenLabs UI)
-    return 'Successfully navigating to the order configuration page';
+    const discountMessage = activeDiscount
+      ? ` Your ${activeDiscount.percentage}% discount will be automatically applied.`
+      : '';
+    return `Successfully navigating to the order configuration page.${discountMessage}`;
   },
 };

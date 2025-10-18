@@ -13,6 +13,7 @@
 
 import type { FunctionDefinition } from '../functionCalling';
 import { createHelpRequest, pollForResponse } from '../helpRequestService';
+import { parseDiscountFromText, setDiscount } from '../discountService';
 
 export const requestHumanHelpFunction: FunctionDefinition = {
   name: 'requestHumanHelp',
@@ -46,6 +47,16 @@ export const requestHumanHelpFunction: FunctionDefinition = {
       const response = await pollForResponse(request.id);
 
       console.log('[requestHumanHelp] Received admin response:', response);
+
+      // Try to parse discount percentage from admin response
+      const discountPercentage = parseDiscountFromText(response);
+      if (discountPercentage !== null) {
+        console.log(`[requestHumanHelp] Discount approved: ${discountPercentage}%`);
+        setDiscount(discountPercentage, question);
+
+        // Return response with discount confirmation
+        return `${response}\n\n[System: ${discountPercentage}% discount has been applied to the order]`;
+      }
 
       // Return the admin's answer to the agent
       return response;

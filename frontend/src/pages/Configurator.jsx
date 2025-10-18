@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Tag } from 'lucide-react';
 import {
   models,
   paintColors,
@@ -9,6 +9,11 @@ import {
   chargingOptions,
   insuranceOptions
 } from '../data/carOptions';
+import {
+  getDiscount,
+  applyDiscount,
+  getDiscountAmount,
+} from '../services/discountService';
 
 const Configurator = () => {
   const [config, setConfig] = useState({
@@ -22,6 +27,8 @@ const Configurator = () => {
   });
 
   const [totalPrice, setTotalPrice] = useState(0);
+  const [discount, setDiscountState] = useState(null);
+  const [finalPrice, setFinalPrice] = useState(0);
 
   useEffect(() => {
     const selectedModel = models.find(m => m.id === config.model);
@@ -42,7 +49,36 @@ const Configurator = () => {
       (selectedInsurance?.price || 0);
 
     setTotalPrice(total);
+
+    // Check for active discount
+    const activeDiscount = getDiscount();
+    setDiscountState(activeDiscount);
+
+    // Calculate final price with discount
+    if (activeDiscount) {
+      const discountedPrice = applyDiscount(total, activeDiscount.percentage);
+      setFinalPrice(discountedPrice);
+    } else {
+      setFinalPrice(total);
+    }
   }, [config]);
+
+  // Poll for discount updates every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const activeDiscount = getDiscount();
+      setDiscountState(activeDiscount);
+
+      if (activeDiscount) {
+        const discountedPrice = applyDiscount(totalPrice, activeDiscount.percentage);
+        setFinalPrice(discountedPrice);
+      } else {
+        setFinalPrice(totalPrice);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [totalPrice]);
 
   const updateConfig = (key, value) => {
     setConfig(prev => ({ ...prev, [key]: value }));
@@ -280,9 +316,32 @@ const Configurator = () => {
               </div>
 
               <div className="pt-4 border-t-2 border-gray-300">
+                {discount && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tag className="text-green-600" size={16} />
+                      <span className="text-sm font-semibold text-green-700">
+                        Discount Applied: {discount.percentage}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Original Price:</span>
+                      <span className="line-through">${totalPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-green-700 font-medium">
+                      <span>You Save:</span>
+                      <span>-${getDiscountAmount(totalPrice, discount.percentage).toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-semibold">Total Price</span>
-                  <span className="text-2xl font-bold">${totalPrice.toLocaleString()}</span>
+                  <span className="text-lg font-semibold">
+                    {discount ? 'Final Price' : 'Total Price'}
+                  </span>
+                  <span className={`text-2xl font-bold ${discount ? 'text-green-600' : ''}`}>
+                    ${finalPrice.toLocaleString()}
+                  </span>
                 </div>
 
                 <button className="w-full cta-button cta-primary pt-4">
