@@ -14,16 +14,19 @@ import {
   applyDiscount,
   getDiscountAmount,
 } from '../services/discountService';
+import { getConfiguration, updateConfiguration as saveConfiguration } from '../services/configurationService';
 
 const Configurator = () => {
+  // Load initial config from localStorage or use defaults
+  const initialConfig = getConfiguration();
   const [config, setConfig] = useState({
-    model: models[0].id,
-    paint: paintColors[0].id,
-    wheels: wheels[0].id,
-    interior: interiors[0].id,
-    autopilot: autopilotOptions[0].id,
-    charging: chargingOptions[0].id,
-    insurance: insuranceOptions[0].id,
+    model: initialConfig.model || models[0].id,
+    paint: initialConfig.paint || paintColors[0].id,
+    wheels: initialConfig.wheels || wheels[0].id,
+    interior: initialConfig.interior || interiors[0].id,
+    autopilot: initialConfig.autopilot || autopilotOptions[0].id,
+    charging: initialConfig.charging || chargingOptions[0].id,
+    insurance: initialConfig.insurance || insuranceOptions[0].id,
   });
 
   const [totalPrice, setTotalPrice] = useState(0);
@@ -80,8 +83,42 @@ const Configurator = () => {
     return () => clearInterval(interval);
   }, [totalPrice]);
 
+  // Poll for configuration updates from agent (every 500ms)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const storedConfig = getConfiguration();
+
+      // Check if any config value changed
+      if (
+        storedConfig.model !== config.model ||
+        storedConfig.paint !== config.paint ||
+        storedConfig.wheels !== config.wheels ||
+        storedConfig.interior !== config.interior ||
+        storedConfig.autopilot !== config.autopilot ||
+        storedConfig.charging !== config.charging ||
+        storedConfig.insurance !== config.insurance
+      ) {
+        console.log('[Configurator] Configuration updated by agent:', storedConfig);
+        setConfig({
+          model: storedConfig.model || config.model,
+          paint: storedConfig.paint || config.paint,
+          wheels: storedConfig.wheels || config.wheels,
+          interior: storedConfig.interior || config.interior,
+          autopilot: storedConfig.autopilot || config.autopilot,
+          charging: storedConfig.charging || config.charging,
+          insurance: storedConfig.insurance || config.insurance,
+        });
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [config]);
+
   const updateConfig = (key, value) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    const newConfig = { ...config, [key]: value };
+    setConfig(newConfig);
+    // Save to localStorage so agent can read current state
+    saveConfiguration({ [key]: value });
   };
 
   const selectedModel = models.find(m => m.id === config.model);
