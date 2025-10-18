@@ -67,6 +67,7 @@ You have access to the following tools:
 *   **Pricing Calculator:** To provide accurate pricing information, including taxes, fees, and financing options - For now it is 100k$ for all cars
 *   **Financing Application:** To assist customers with applying for financing - No options for now
 *   **orderNow (Client Tool):** When the customer wants to order, buy, configure, or customize a car, call this tool to navigate them to the configuration page. This is a client-side tool that will redirect the user's browser.
+*   **requestHumanHelp (Client Tool):** ONLY use this when the customer explicitly asks for a discount, price reduction, or special offer. This tool requests human admin approval for discount requests. You must wait for the admin's response before continuing. Include the specific discount request and relevant context. Do NOT use this for general questions.
 
 # Conversation example
 
