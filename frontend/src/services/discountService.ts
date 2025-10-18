@@ -73,6 +73,13 @@ export function setDiscount(percentage: number, reason?: string): Discount {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(discount));
     console.log(`[Discount] Set ${percentage}% discount`, discount);
+
+    // Dispatch custom event for same-window updates
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('discountUpdated', {
+        detail: discount
+      }));
+    }
   } catch (error) {
     console.error('Error saving discount:', error);
   }
@@ -87,6 +94,13 @@ export function clearDiscount(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
     console.log('[Discount] Cleared active discount');
+
+    // Dispatch custom event for same-window updates
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('discountUpdated', {
+        detail: null
+      }));
+    }
   } catch (error) {
     console.error('Error clearing discount:', error);
   }

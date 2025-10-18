@@ -32,7 +32,11 @@ export const orderNowFunction: FunctionDefinition = {
 
     // Navigate to the cart/configurator page
     // The discount is stored in localStorage and will be automatically applied
-    window.location.href = '/cart';
+    // Preserve country code if present (for Medusa routing like /dk/cart)
+    const currentPath = window.location.pathname;
+    const countryCodeMatch = currentPath.match(/^\/([a-z]{2})\//);
+    const cartPath = countryCodeMatch ? `/${countryCodeMatch[1]}/cart` : '/cart';
+    window.location.href = cartPath;
 
     // Return response for agent (if "Wait for response" is enabled in ElevenLabs UI)
     const discountMessage = activeDiscount

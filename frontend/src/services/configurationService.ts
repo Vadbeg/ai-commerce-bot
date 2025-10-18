@@ -125,6 +125,13 @@ export function updateConfiguration(updates: Partial<CarConfiguration>): {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
     console.log('[Configuration] Updated:', updates);
 
+    // Dispatch custom event for same-window updates
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('configurationUpdated', {
+        detail: newConfig
+      }));
+    }
+
     return {
       success: true,
       config: newConfig,

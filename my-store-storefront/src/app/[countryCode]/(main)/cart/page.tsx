@@ -18,6 +18,8 @@ import {
   type ChargingOption,
   type InsuranceOption,
 } from '@/data/carOptions';
+import { getConfiguration, updateConfiguration } from '../../../../../../frontend/src/services/configurationService';
+import { getDiscount, applyDiscount, getDiscountAmount, type Discount } from '../../../../../../frontend/src/services/discountService';
 
 interface Config {
   model: string;
@@ -84,6 +86,96 @@ export default function ConfiguratorPage() {
   });
 
   const [totalPrice, setTotalPrice] = useState(0);
+  const [activeDiscount, setActiveDiscount] = useState<Discount | null>(null);
+  const [finalPrice, setFinalPrice] = useState(0);
+
+  // Load configuration from localStorage on mount
+  useEffect(() => {
+    const savedConfig = getConfiguration();
+    setConfig({
+      model: savedConfig.model || models[0].id,
+      paint: savedConfig.paint || paintColors[0].id,
+      wheels: savedConfig.wheels || wheels[0].id,
+      interior: savedConfig.interior || interiors[0].id,
+      autopilot: savedConfig.autopilot || autopilotOptions[0].id,
+      charging: savedConfig.charging || chargingOptions[0].id,
+      insurance: savedConfig.insurance || insuranceOptions[0].id,
+    });
+    console.log('[Configurator] Loaded config from localStorage:', savedConfig);
+  }, []);
+
+  // Load discount from localStorage on mount
+  useEffect(() => {
+    const discount = getDiscount();
+    setActiveDiscount(discount);
+    if (discount) {
+      console.log('[Configurator] Loaded active discount:', discount);
+    }
+  }, []);
+
+  // Listen for localStorage changes (from ElevenLabs agent)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'car_configuration' && e.newValue) {
+        try {
+          const newConfig = JSON.parse(e.newValue);
+          console.log('[Configurator] Config updated via localStorage:', newConfig);
+          setConfig({
+            model: newConfig.model || models[0].id,
+            paint: newConfig.paint || paintColors[0].id,
+            wheels: newConfig.wheels || wheels[0].id,
+            interior: newConfig.interior || interiors[0].id,
+            autopilot: newConfig.autopilot || autopilotOptions[0].id,
+            charging: newConfig.charging || chargingOptions[0].id,
+            insurance: newConfig.insurance || insuranceOptions[0].id,
+          });
+        } catch (error) {
+          console.error('[Configurator] Error parsing storage event:', error);
+        }
+      }
+
+      // Listen for discount changes
+      if (e.key === 'active_discount') {
+        const discount = getDiscount();
+        setActiveDiscount(discount);
+        console.log('[Configurator] Discount updated via localStorage:', discount);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also listen for custom event for same-window updates
+    const handleCustomUpdate = ((e: CustomEvent) => {
+      console.log('[Configurator] Config updated via custom event:', e.detail);
+      const savedConfig = getConfiguration();
+      setConfig({
+        model: savedConfig.model || models[0].id,
+        paint: savedConfig.paint || paintColors[0].id,
+        wheels: savedConfig.wheels || wheels[0].id,
+        interior: savedConfig.interior || interiors[0].id,
+        autopilot: savedConfig.autopilot || autopilotOptions[0].id,
+        charging: savedConfig.charging || chargingOptions[0].id,
+        insurance: savedConfig.insurance || insuranceOptions[0].id,
+      });
+    }) as EventListener;
+
+    window.addEventListener('configurationUpdated', handleCustomUpdate);
+
+    // Listen for discount update events
+    const handleDiscountUpdate = (() => {
+      const discount = getDiscount();
+      setActiveDiscount(discount);
+      console.log('[Configurator] Discount updated via custom event:', discount);
+    }) as EventListener;
+
+    window.addEventListener('discountUpdated', handleDiscountUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('configurationUpdated', handleCustomUpdate);
+      window.removeEventListener('discountUpdated', handleDiscountUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const selectedModel = models.find(m => m.id === config.model);
@@ -104,10 +196,20 @@ export default function ConfiguratorPage() {
       (selectedInsurance?.price || 0);
 
     setTotalPrice(total);
-  }, [config]);
+
+    // Apply discount if active
+    const final = activeDiscount
+      ? applyDiscount(total, activeDiscount.percentage)
+      : total;
+    setFinalPrice(final);
+  }, [config, activeDiscount]);
 
   const updateConfig = (key: keyof Config, value: string) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    const newConfig = { ...config, [key]: value };
+    setConfig(newConfig);
+    // Save to localStorage so it persists
+    updateConfiguration({ [key]: value });
+    console.log('[Configurator] Manual update:', key, value);
   };
 
   const selectedModel = models.find(m => m.id === config.model);
@@ -310,11 +412,48 @@ export default function ConfiguratorPage() {
                 )}
               </div>
 
-              <div className="pt-4 border-t-2 border-gray-300">
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-semibold">Total Price</span>
-                  <span className="text-2xl font-bold">${totalPrice.toLocaleString()}</span>
+              {/* Discount Section */}
+              {activeDiscount && (
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="bg-green-50 border-2 border-green-500 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-green-700 font-semibold">
+                        🎉 {activeDiscount.percentage}% Discount Applied!
+                      </span>
+                    </div>
+                    {activeDiscount.reason && (
+                      <p className="text-xs text-gray-600">{activeDiscount.reason}</p>
+                    )}
+                  </div>
                 </div>
+              )}
+
+              <div className="pt-4 border-t-2 border-gray-300">
+                {activeDiscount ? (
+                  <>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">Subtotal</span>
+                      <span className="text-sm text-gray-600">${totalPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-green-600 font-medium">
+                        Discount ({activeDiscount.percentage}%)
+                      </span>
+                      <span className="text-sm text-green-600 font-medium">
+                        -${getDiscountAmount(totalPrice, activeDiscount.percentage).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-6 pt-2 border-t border-gray-200">
+                      <span className="text-lg font-semibold">Total Price</span>
+                      <span className="text-2xl font-bold">${finalPrice.toLocaleString()}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-lg font-semibold">Total Price</span>
+                    <span className="text-2xl font-bold">${totalPrice.toLocaleString()}</span>
+                  </div>
+                )}
 
                 <button className="w-full cta-button cta-primary pt-4">
                   Order Now
