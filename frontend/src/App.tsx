@@ -1,12 +1,17 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import Home from './pages/Home';
+import Configurator from './pages/Configurator';
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen">
         <Header />
-        Some random text
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/cart" element={<Configurator />} />
+        </Routes>
       </div>
     </Router>
   );
