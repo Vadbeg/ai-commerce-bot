@@ -31,45 +31,43 @@ export function initializeElevenLabsIntegration() {
 function setupWidgetListeners(widget: Element) {
   console.log('[ElevenLabs] Widget found, setting up client tool listeners');
 
-  // Get all registered functions
-  const functions = getFunctionDefinitions();
+  // Listen for the 'elevenlabs-convai:call' event to configure client tools
+  widget.addEventListener('elevenlabs-convai:call', (event: any) => {
+    console.log('[ElevenLabs] Widget call event received, configuring client tools');
 
-  // Add event listener for each registered function
-  functions.forEach(func => {
-    widget.addEventListener(func.name, async (event: any) => {
-      console.log(`[ElevenLabs] Client tool called: ${func.name}`, event.detail);
+    // Get all registered functions
+    const functions = getFunctionDefinitions();
 
-      try {
-        // Execute the function with parameters from the event
-        const result = await executeFunction({
-          name: func.name,
-          parameters: event.detail || {}
-        });
+    // Build the clientTools object dynamically from registered functions
+    const clientTools: Record<string, (params: any) => any> = {};
 
-        // If the function returns a result, send it back to the agent
-        if (result !== undefined && result !== null) {
-          // The widget expects the result to be returned via event.respondWith()
-          if (typeof (event as any).respondWith === 'function') {
-            (event as any).respondWith(result);
-          }
-        }
-      } catch (error) {
-        console.error(`[ElevenLabs] Error executing ${func.name}:`, error);
+    functions.forEach(func => {
+      // Create a wrapper function for each registered function
+      clientTools[func.name] = async (params: any) => {
+        console.log(`[ElevenLabs] Client tool called: ${func.name}`, params);
 
-        // Send error back to agent if possible
-        if (typeof (event as any).respondWith === 'function') {
-          (event as any).respondWith({
-            error: true,
-            message: error instanceof Error ? error.message : 'Unknown error'
+        try {
+          // Execute the function with parameters
+          const result = await executeFunction({
+            name: func.name,
+            parameters: params || {}
           });
+          console.log(`[ElevenLabs] Client tool executed: ${func.name}`, result);
+          return result;
+        } catch (error) {
+          console.error(`[ElevenLabs] Error executing ${func.name}:`, error);
+          throw error;
         }
-      }
+      };
+
+      console.log(`[ElevenLabs] Registered client tool: ${func.name}`);
     });
 
-    console.log(`[ElevenLabs] Registered listener for: ${func.name}`);
-  });
+    // Set the clientTools on the widget config
+    event.detail.config.clientTools = clientTools;
 
-  console.log(`[ElevenLabs] Setup complete. ${functions.length} client tools registered.`);
+    console.log(`[ElevenLabs] Setup complete. ${functions.length} client tools configured.`);
+  });
 }
 
 /**

@@ -11,6 +11,7 @@ initializeFunctionCalling()
 
 // Register all available functions
 availableFunctions.forEach(func => registerFunction(func))
+console.log(availableFunctions)
 
 // Initialize ElevenLabs widget integration
 initializeElevenLabsIntegration()
