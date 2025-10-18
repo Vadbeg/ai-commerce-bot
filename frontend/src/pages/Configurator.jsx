@@ -285,7 +285,7 @@ const Configurator = () => {
                   <span className="text-2xl font-bold">${totalPrice.toLocaleString()}</span>
                 </div>
 
-                <button className="w-full cta-button cta-primary">
+                <button className="w-full cta-button cta-primary pt-4">
                   Order Now
                 </button>
               </div>

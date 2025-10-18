@@ -6,9 +6,8 @@ const Home = () => {
     <div className="w-full">
       {/* Hero Section - Model S */}
       <section className="section-full flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white pt-20">
-        <div className="text-center space-y-4 mb-8">
+        <div className="text-center space-y-4 mb-8 mt-16">
           <h1 className="text-5xl font-semibold tracking-tight">Model S</h1>
-          <p className="text-xl text-gray-600">Plaid</p>
           <div className="flex gap-8 justify-center text-sm mt-6">
             <div>
               <p className="text-2xl font-semibold">396mi</p>
@@ -30,15 +29,15 @@ const Home = () => {
         </div>
 
         {/* Car Image Placeholder */}
-        <div className="w-full max-w-6xl h-96 flex items-center justify-center">
+        <div className="w-full h-[600px] flex items-center justify-center">
           <img
             src="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-S-Main-Hero-Desktop-LHD.jpg"
             alt="Edison Model S"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
           />
         </div>
 
-        <div className="flex gap-6 mt-8">
+        <div className="flex gap-6 mt-8 mb-8">
           <Link to="/cart" className="cta-button cta-primary">
             Order Now
           </Link>
@@ -47,13 +46,13 @@ const Home = () => {
           </button>
         </div>
 
-        <ChevronDown className="absolute bottom-8 animate-bounce" size={32} />
+        {/* <ChevronDown className="absolute bottom-8 animate-bounce" size={32} /> */}
       </section>
 
       {/* Interior Section */}
       <section className="section-full flex items-center justify-center bg-black text-white">
-        <div className="grid grid-cols-2 gap-12 max-w-7xl w-full px-8">
-          <div className="flex flex-col justify-center space-y-6">
+        <div className="grid grid-cols-2 gap-0 w-full">
+          <div className="flex flex-col justify-center space-y-6 px-16">
             <h2 className="text-4xl font-semibold">Interior of the Future</h2>
             <p className="text-gray-300 text-lg leading-relaxed">
               A distinctive new look sets Model S apart. The interior is equally
@@ -71,11 +70,11 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center pr-16">
             <img
-              src="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-S-Interior-Grid-A-Desktop-Global.jpg"
+              src="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-S-New-Interior-Desktop-NA.png"
               alt="Edison Interior"
-              className="w-full h-auto rounded-lg"
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
@@ -83,18 +82,18 @@ const Home = () => {
 
       {/* Performance Section */}
       <section className="section-full flex items-center justify-center bg-white">
-        <div className="grid grid-cols-2 gap-12 max-w-7xl w-full px-8">
-          <div className="flex items-center justify-center">
+        <div className="grid grid-cols-2 gap-0 w-full">
+          <div className="flex items-center justify-center h-full pl-16">
             <img
               src="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-S-Performance-Hero-Desktop-LHD.jpg"
               alt="Performance"
-              className="w-full h-auto rounded-lg"
+              className="w-full h-full object-cover"
             />
           </div>
-          <div className="flex flex-col justify-center space-y-6">
-            <h2 className="text-4xl font-semibold">Plaid Powertrain</h2>
+          <div className="flex flex-col justify-center space-y-6 px-16">
+            <h2 className="text-4xl font-semibold">Powertrain</h2>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Model S Plaid has the quickest acceleration of any vehicle in
+              Model S has the quickest acceleration of any vehicle in
               production. Updated battery architecture enables both record
               performance and maximum range.
             </p>
@@ -121,8 +120,8 @@ const Home = () => {
       </section>
 
       {/* Autopilot Section */}
-      <section className="section-full flex flex-col items-center justify-center bg-gray-50 px-8">
-        <div className="text-center max-w-3xl space-y-6 mb-12">
+      <section className="section-full flex flex-col items-center justify-center bg-gray-50">
+        <div className="text-center max-w-3xl space-y-6 mb-12 px-8">
           <h2 className="text-4xl font-semibold">Autopilot</h2>
           <p className="text-gray-600 text-lg">
             Autopilot enables your car to steer, accelerate and brake
@@ -130,11 +129,11 @@ const Home = () => {
             introduces additional features and improves existing functionality.
           </p>
         </div>
-        <div className="w-full max-w-5xl">
+        <div className="w-full">
           <img
-            src="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-S-Autopilot-Desktop-LHD.jpg"
+            src="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-S-New-FSD-Desktop-NA-v2.png"
             alt="Autopilot"
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto"
           />
         </div>
         <div className="mt-12">
